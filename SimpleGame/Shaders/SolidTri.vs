@@ -1,7 +1,16 @@
 #version 330
 
 uniform float u_Time;
+
+
 in vec3 a_Position;
+in float a_Mass;
+in vec2 a_Vel;
+in float a_RV;
+
+
+const float c_PI = 3.141592;
+const vec2 c_G = vec2(0, -9.8);
 
 void Basic()
 {
@@ -32,19 +41,6 @@ void Sin2()
 
 	vec4 newPosition;
 	newPosition.x = a_Position.x + moveX;
-	newPosition.y = a_Position.y + sin(t*2*3.141592);
-	newPosition.z = a_Position.z;
-	newPosition.w = 1.0;
-
-	gl_Position = newPosition;
-}
-
-void Sin3()
-{
-	float t = mod(u_Time, 2.0);
-
-	vec4 newPosition;
-	newPosition.x = a_Position.x - 1 + t;
 	newPosition.y = a_Position.y + sin(t*2*3.141592);
 	newPosition.z = a_Position.z;
 	newPosition.w = 1.0;
@@ -90,7 +86,24 @@ void Tino()
     gl_Position = newPosition;
 }
 
+
+void Falling()
+{
+	float t = mod(u_Time, 1.0);
+	vec4 newPos;
+
+	float initPosX = a_Position.x + sin(a_RV * 2 * c_PI);
+	float initPosY = a_Position.y + cos(a_RV * 2 * c_PI);
+
+	newPos.x = initPosX + (a_Vel.x * t) + (c_G.x * t * t * 0.5);
+	newPos.y = initPosY + (a_Vel.y * t) + (c_G.y * t * t * 0.5);
+	newPos.z = 0;
+	newPos.w = 1;
+
+	gl_Position = newPos;
+}
+
 void main()
 {
-	Tino();
+	Falling();
 }

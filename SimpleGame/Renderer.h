@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <vector>
 
 #include "Dependencies\glew.h"
 
@@ -16,6 +17,7 @@ public:
 	bool IsInitialized();
 	void DrawSolidRect(float x, float y, float z, float size, float r, float g, float b, float a);
 	void DrawTriangle();
+	void GenParticles(int PartNum);
 
 private:
 	void Initialize(int windowSizeX, int windowSizeY);
@@ -35,5 +37,7 @@ private:
 
 	GLuint m_TriVBO = 0;
 	GLuint m_TriangleShader = 0;
+
+	int m_VertexCount = 0;
 };
 
