@@ -26,7 +26,7 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	//Create VBOs
 	CreateVertexBufferObjects();
 
-	GenParticles(10000);
+	GenParticles(1000);
 
 	if (m_SolidRectShader > 0 && m_VBORect > 0)
 	{
@@ -90,39 +90,40 @@ void Renderer::GenParticles(int PartNum)
 		float centerY = 0; // ((float)(rand() % 2000) / 1000.0f) - 1.0f;
 
 		// 2. 랜덤 초기 속도 생성 (-2.0 ~ 2.0 사이)
-		float vx = ((float)(rand() % 4000) / 1000.0f) - 2.0f;
+		float vx = 0; // ((float)(rand() % 4000) / 1000.0f) - 0.5f;
 		float vy = ((float)(rand() % 4000) / 1000.0f) - 2.0f;
 
 		float mass = 1.0f; // 질량 (필요에 따라 랜덤화 가능)
 
 		float RV = ((float)(rand() % 4000) / 1000.0f) - 1.0f;
+		float RV1 = ((float)(rand() % 4000) / 1000.0f) - 1.0f;
 
-		// 3. 하나의 파티클(사각형)을 구성하는 6개의 정점 데이터 삽입
-		// 데이터 구조: x, y, z, mass, vx, vy (stride: 6 * sizeof(float))
+
+		// 데이터 구조: x, y, z, mass, velocity_x, velocity_y, RandomValue0, RandomValue1
 
 		// 첫 번째 삼각형
 		particleData.push_back(centerX - size / 2); particleData.push_back(centerY - size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
 
 		particleData.push_back(centerX + size / 2); particleData.push_back(centerY - size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
 
 		particleData.push_back(centerX + size / 2); particleData.push_back(centerY + size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
 
 		// 두 번째 삼각형
 		particleData.push_back(centerX - size / 2); particleData.push_back(centerY - size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
 
 		particleData.push_back(centerX + size / 2); particleData.push_back(centerY + size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
 
 		particleData.push_back(centerX - size / 2); particleData.push_back(centerY + size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
 	}
 
 	// 전체 정점 개수 갱신 (파티클 1개당 정점 6개)
-	m_VertexCount = PartNum * 7;
+	m_VertexCount = PartNum * 8;
 
 	// 4. VBO 생성 및 데이터 업로드
 	if (m_TriVBO == 0)
@@ -277,21 +278,26 @@ void Renderer::DrawTriangle()
 	int uTime = glGetUniformLocation(m_TriangleShader, "u_Time");
 	glUniform1f(uTime, 0 + gTime);
 
-	int attribPosition = glGetAttribLocation(m_TriangleShader, "a_Position");
-	int attribMass = glGetAttribLocation(m_TriangleShader, "a_Mass");
-	int attribVel = glGetAttribLocation(m_TriangleShader, "a_Vel");
-	int attribRandom = glGetAttribLocation(m_TriangleShader, "a_RV");
+	int attribPosition	= glGetAttribLocation(m_TriangleShader, "a_Position");
+	int attribMass		= glGetAttribLocation(m_TriangleShader, "a_Mass");
+	int attribVel		= glGetAttribLocation(m_TriangleShader, "a_Vel");
+	int attribRandom	= glGetAttribLocation(m_TriangleShader, "a_RV");
+	int attribRandom1	= glGetAttribLocation(m_TriangleShader, "a_RV1");
 
 	glEnableVertexAttribArray(attribPosition);
 	glEnableVertexAttribArray(attribMass);
 	glEnableVertexAttribArray(attribVel);
 	glEnableVertexAttribArray(attribRandom);
+	glEnableVertexAttribArray(attribRandom1);
+
+	int AttribPointerSize = sizeof(float) * 8;
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_TriVBO);
-	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 7, 0);
-	glVertexAttribPointer(attribMass, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (GLvoid*)(sizeof(float) * 3));
-	glVertexAttribPointer(attribVel, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (GLvoid*)(sizeof(float) * 4));
-	glVertexAttribPointer(attribRandom, 1, GL_FLOAT, GL_FALSE, sizeof(float) * 7, (GLvoid*)(sizeof(float) * 6));
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, AttribPointerSize, 0);
+	glVertexAttribPointer(attribMass	, 1, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 3));
+	glVertexAttribPointer(attribVel		, 2, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 4));
+	glVertexAttribPointer(attribRandom	, 1, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 6));
+	glVertexAttribPointer(attribRandom1	, 1, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 7));
 
 	glDrawArrays(GL_TRIANGLES, 0, m_VertexCount); // Draw Call
 }
