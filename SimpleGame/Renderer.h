@@ -38,6 +38,9 @@ private:
 	GLuint m_TriVBO = 0;
 	GLuint m_TriangleShader = 0;
 
+	GLuint m_MyVBO = 0;
+	GLuint m_MyShader = 0;
+
 	int m_VertexCount = 0;
 };
 

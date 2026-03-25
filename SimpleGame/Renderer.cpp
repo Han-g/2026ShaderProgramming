@@ -22,6 +22,7 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	//Load shaders
 	m_SolidRectShader = CompileShaders("./Shaders/SolidRect.vs", "./Shaders/SolidRect.fs");
 	m_TriangleShader = CompileShaders("./Shaders/SolidTri.vs", "./Shaders/SolidTri.fs");
+	m_MyShader = CompileShaders("./Shaders/MySolid.vs", "./Shaders/MySolid.fs");
 	
 	//Create VBOs
 	CreateVertexBufferObjects();
@@ -81,7 +82,7 @@ void Renderer::GenParticles(int PartNum)
 	srand((unsigned int)time(NULL));
 
 	std::vector<float> particleData;
-	float size = 0.01f; // 개별 파티클의 크기
+	float size = 0.02f; // 개별 파티클의 크기
 
 	for (int i = 0; i < PartNum; ++i)
 	{
@@ -91,35 +92,42 @@ void Renderer::GenParticles(int PartNum)
 
 		// 2. 랜덤 초기 속도 생성 (-2.0 ~ 2.0 사이)
 		float vx = 0; // ((float)(rand() % 4000) / 1000.0f) - 0.5f;
-		float vy = ((float)(rand() % 4000) / 1000.0f) - 2.0f;
+		float vy = 0; // ((float)(rand() % 1000) / 1000.0f);
 
 		float mass = 1.0f; // 질량 (필요에 따라 랜덤화 가능)
 
-		float RV = ((float)(rand() % 4000) / 1000.0f) - 1.0f;
-		float RV1 = ((float)(rand() % 4000) / 1000.0f) - 1.0f;
+		float RV = ((float)(rand() % 2000) / 1000.0f) - 1.0f;	// -1 ~ 1
+		float RV1 = ((float)(rand() % 2000) / 1000.0f) - 1.0f; //((float)(rand() % 1000) / 1000.0f);			// 0 ~ 1
+		float RV2 = ((float)(rand() % 2000) / 1000.0f) - 1.0f; //((float)(rand() % 1000) / 1000.0f) - 1.0f;	// -1 ~ 0
 
 
 		// 데이터 구조: x, y, z, mass, velocity_x, velocity_y, RandomValue0, RandomValue1
 
 		// 첫 번째 삼각형
 		particleData.push_back(centerX - size / 2); particleData.push_back(centerY - size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); 
+		particleData.push_back(RV); particleData.push_back(RV1); particleData.push_back(RV2);
 
 		particleData.push_back(centerX + size / 2); particleData.push_back(centerY - size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); 
+		particleData.push_back(RV); particleData.push_back(RV1); particleData.push_back(RV2);
 
 		particleData.push_back(centerX + size / 2); particleData.push_back(centerY + size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); 
+		particleData.push_back(RV); particleData.push_back(RV1); particleData.push_back(RV2);
 
 		// 두 번째 삼각형
 		particleData.push_back(centerX - size / 2); particleData.push_back(centerY - size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); 
+		particleData.push_back(RV); particleData.push_back(RV1); particleData.push_back(RV2);
 
 		particleData.push_back(centerX + size / 2); particleData.push_back(centerY + size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); 
+		particleData.push_back(RV); particleData.push_back(RV1); particleData.push_back(RV2);
 
 		particleData.push_back(centerX - size / 2); particleData.push_back(centerY + size / 2); particleData.push_back(0.0f);
-		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); particleData.push_back(RV); particleData.push_back(RV1);
+		particleData.push_back(mass); particleData.push_back(vx); particleData.push_back(vy); 
+		particleData.push_back(RV); particleData.push_back(RV1); particleData.push_back(RV2);
 	}
 
 	// 전체 정점 개수 갱신 (파티클 1개당 정점 6개)
@@ -283,14 +291,16 @@ void Renderer::DrawTriangle()
 	int attribVel		= glGetAttribLocation(m_TriangleShader, "a_Vel");
 	int attribRandom	= glGetAttribLocation(m_TriangleShader, "a_RV");
 	int attribRandom1	= glGetAttribLocation(m_TriangleShader, "a_RV1");
+	int attribRandom2	= glGetAttribLocation(m_TriangleShader, "a_RV2");
 
 	glEnableVertexAttribArray(attribPosition);
 	glEnableVertexAttribArray(attribMass);
 	glEnableVertexAttribArray(attribVel);
 	glEnableVertexAttribArray(attribRandom);
 	glEnableVertexAttribArray(attribRandom1);
+	glEnableVertexAttribArray(attribRandom2);
 
-	int AttribPointerSize = sizeof(float) * 8;
+	int AttribPointerSize = sizeof(float) * 9;
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_TriVBO);
 	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, AttribPointerSize, 0);
@@ -298,6 +308,7 @@ void Renderer::DrawTriangle()
 	glVertexAttribPointer(attribVel		, 2, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 4));
 	glVertexAttribPointer(attribRandom	, 1, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 6));
 	glVertexAttribPointer(attribRandom1	, 1, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 7));
+	glVertexAttribPointer(attribRandom2 , 1, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 8));
 
 	glDrawArrays(GL_TRIANGLES, 0, m_VertexCount); // Draw Call
 }

@@ -8,6 +8,9 @@ in float a_Mass;
 in vec2 a_Vel;
 in float a_RV;
 in float a_RV1;
+in float a_RV2;
+
+out float v_Gray;
 
 
 const float c_PI = 3.141592;
@@ -254,8 +257,98 @@ void waterfall()
     gl_Position = newPos;
 }
 
+void m()
+{
+    float newTime = u_Time - a_RV1 * 3;
+	
+    if (newTime > 0)
+	{
+		float lifeTime = (a_RV2 + 0.5) * 0.2;
+		float t = mod(newTime, lifeTime);
+		float scale = pseudoRandom(a_RV1) * (lifeTime - t) / lifeTime;
+		vec4 newPos;
+
+		float initPosX = a_Position.x * scale + sin(a_RV * 2 * c_PI);
+		float initPosY = a_Position.y * scale + cos(a_RV * 2 * c_PI);
+
+		newPos.x = initPosX + (a_Vel.x * t) + (c_G.x * t * t * 0.5);
+		newPos.y = initPosY + (a_Vel.y * t) + (c_G.y * t * t * 0.5);
+		newPos.z = 0;
+		newPos.w = 1;
+
+		gl_Position = newPos;
+	}
+    else 
+    {
+        gl_Position = vec4(2.0, 2.0, 2.0, 2.0);
+    }
+}
+
+void Thrust()
+{
+    // example 3
+
+    float newTime = u_Time - a_RV1;
+    if(newTime > 0)
+    {
+        float t = mod(newTime, 1.0);
+        float scale = 0.5 + (t * 0.5);
+        float ampScale = 0.5 * t;
+        float amp = a_RV * ampScale;
+        float period = (a_RV2);
+        vec4 newPosition;
+
+        newPosition.x = ((a_Position.x * scale) - 1) + (t * 2);
+        newPosition.y = (a_Position.y * scale) + (sin(t * period * c_PI) * amp);
+        newPosition.z = a_Position.z;
+        newPosition.w = 1;
+
+        gl_Position = newPosition;
+
+        v_Gray = 1 - t;
+    }
+    else
+    {
+        gl_Position = vec4(2,2,2,2);
+        v_Gray = 0;
+    }
+
+    // example 1
+    
+    //float amp = a_RV;
+    //float t = mod(u_Time, 1.0);
+    //float startTime = a_RV1 + t;
+	//vec4 newPosition;
+
+	//newPosition.x = (a_Position.x - 1) + (startTime * 2);
+	//newPosition.y = a_Position.y + sin(startTime * 2 * 3.141592) * amp;
+	//newPosition.z = a_Position.z;
+	//newPosition.w = 1.0;
+
+	//gl_Position = newPosition;
+
+    // example 2
+
+    //float newTime = u_Time - a_RV1;
+    //if(newTime > 0)
+    //{
+    //    float t = mod(newTime, 1.0);
+    //    float ampScale = 0.5 * t;
+    //    float amp = a_RV * ampScale;
+    //    float period = (a_RV2);
+    //    vec4 newPosition;
+
+    //    newPosition.x = (a_Position.x - 1) + (t * 2);
+    //    newPosition.y = a_Position.y + (sin(t * period * c_PI) * amp);
+    //    newPosition.z = a_Position.z;
+    //    newPosition.w = 1;
+
+    //    gl_Position = newPosition;
+    //}
+}
+
 void main()
 {
 	//DiffTimeFalling();
-	waterfall();
+	Thrust();
 }
