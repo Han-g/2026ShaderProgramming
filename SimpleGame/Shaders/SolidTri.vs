@@ -347,8 +347,54 @@ void Thrust()
     //}
 }
 
+void AIFrame()
+{
+    float newTime = u_Time - a_RV1;
+    if(newTime > 0.0)
+    {
+        // 1. 생명 주기: 터보 라이터의 가스 분출 속도처럼 매우 짧게 설정 (0.2~0.3초)
+        float lifeTime = 0.25; 
+        float t = mod(newTime, lifeTime) / lifeTime; 
+
+        // 2. 스케일: 밑동은 유지되다가 끝부분에서 급격히 날카로워지도록 t^2 사용
+        float scale = 0.6 * (1.0 - (t * t)); 
+
+        // 3. 수직 이동: Y축으로 매우 빠르게 쏘아올림
+        float startY = -0.8;
+        float speed = 5.0; // 분출 속도
+        float moveY = startY + (t * speed);
+
+        // 4. 터보 진동(Jittering): 크고 느린 일렁임(Sway)이 아닌, 미세하고 빠른 떨림
+        // 주파수를 100~200 수준으로 올려서 눈에 보일 듯 말 듯 빠르게 떨게 만듭니다.
+        float jitterFreq = 150.0 + (a_RV2 * 50.0); 
+        float jitterAmp = 0.03 * t; // 진폭은 매우 좁게 제한
+        
+        // X축 생성 위치도 매우 좁은 범위(0.05) 내로 제한하여 곧게 뻗게 함
+        float startX = (a_RV - 0.5) * 0.05; 
+        float moveX = startX + (sin(newTime * jitterFreq) * jitterAmp);
+
+        vec4 newPosition;
+        newPosition.x = (a_Position.x * scale) + moveX;
+        newPosition.y = (a_Position.y * scale) + moveY;
+        newPosition.z = a_Position.z;
+        newPosition.w = 1.0;
+
+        gl_Position = newPosition;
+
+        // 5. v_Gray 설정 (프래그먼트 셰이더로 전달)
+        // 아주 빠른 깜빡임을 섞어서 불꽃의 코어 에너지를 표현
+        float flicker = 0.85 + 0.15 * sin(newTime * 300.0);
+        v_Gray = (1.0 - t) * flicker;
+    }
+    else
+    {
+        gl_Position = vec4(2.0, 2.0, 2.0, 2.0);
+        v_Gray = 0.0;
+    }
+}
+
 void main()
 {
-	//DiffTimeFalling();
-	Thrust();
+	AIFrame();
+	//Thrust();
 }

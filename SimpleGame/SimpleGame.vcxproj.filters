@@ -55,10 +55,10 @@
     <None Include="Shaders\SolidTri.vs">
       <Filter>소스 파일\Shaders</Filter>
     </None>
-    <None Include="Shaders\MySolid.fs">
+    <None Include="Shaders\DrawFS.fs">
       <Filter>소스 파일\Shaders</Filter>
     </None>
-    <None Include="Shaders\MySolid.vs">
+    <None Include="Shaders\DrawFS.vs">
       <Filter>소스 파일\Shaders</Filter>
     </None>
   </ItemGroup>

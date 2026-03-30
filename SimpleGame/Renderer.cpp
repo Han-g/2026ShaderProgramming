@@ -22,12 +22,12 @@ void Renderer::Initialize(int windowSizeX, int windowSizeY)
 	//Load shaders
 	m_SolidRectShader = CompileShaders("./Shaders/SolidRect.vs", "./Shaders/SolidRect.fs");
 	m_TriangleShader = CompileShaders("./Shaders/SolidTri.vs", "./Shaders/SolidTri.fs");
-	m_MyShader = CompileShaders("./Shaders/MySolid.vs", "./Shaders/MySolid.fs");
+	m_MyShader = CompileShaders("./Shaders/DrawFS.vs", "./Shaders/DrawFS.fs");
 	
 	//Create VBOs
 	CreateVertexBufferObjects();
 
-	GenParticles(1000);
+	//GenParticles(1000);
 
 	if (m_SolidRectShader > 0 && m_VBORect > 0)
 	{
@@ -74,6 +74,24 @@ void Renderer::CreateVertexBufferObjects()
 	glGenBuffers(1, &m_TriVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_TriVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);*/
+	
+	
+	// x, y, z, tx, ty
+	float rectFS[]
+		=
+	{
+		-1,	-1, 0, 0, 1,
+		 1,	 1, 0, 1, 0,
+		-1,	 1, 0, 0, 0,
+
+		-1, -1, 0, 0, 1,
+		 1, -1, 0, 1, 1,
+		 1,  1, 0, 1, 0,
+	};
+
+	glGenBuffers(1, &m_MyVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, m_MyVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(rectFS), rectFS, GL_STATIC_DRAW);
 }
 
 void Renderer::GenParticles(int PartNum)
@@ -311,6 +329,31 @@ void Renderer::DrawTriangle()
 	glVertexAttribPointer(attribRandom2 , 1, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 8));
 
 	glDrawArrays(GL_TRIANGLES, 0, m_VertexCount); // Draw Call
+}
+
+void Renderer::DrawFS()
+{
+	gTime += 0.0001;
+	//Program select
+	GLuint shader = m_MyShader;
+	glUseProgram(shader);
+
+	int uTime = glGetUniformLocation(m_TriangleShader, "u_Time");
+	glUniform1f(uTime, gTime);
+
+	int attribPosition = glGetAttribLocation(shader, "a_Position");
+	int attribTexture = glGetAttribLocation(shader, "a_Texture");
+
+	glEnableVertexAttribArray(attribPosition);
+	glEnableVertexAttribArray(attribTexture);
+
+	int AttribPointerSize = sizeof(float) * 5;
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_MyVBO);
+	glVertexAttribPointer(attribPosition, 3, GL_FLOAT, GL_FALSE, AttribPointerSize, 0);
+	glVertexAttribPointer(attribTexture, 2, GL_FLOAT, GL_FALSE, AttribPointerSize, (GLvoid*)(sizeof(float) * 3));
+
+	glDrawArrays(GL_TRIANGLES, 0, 6); // Draw Call
 }
 
 void Renderer::GetGLPosition(float x, float y, float *newX, float *newY)
