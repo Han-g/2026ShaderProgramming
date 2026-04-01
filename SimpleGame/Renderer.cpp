@@ -333,7 +333,7 @@ void Renderer::DrawTriangle()
 
 void Renderer::DrawFS()
 {
-	gTime += 0.0001;
+	gTime += 0.001;
 	//Program select
 	GLuint shader = m_MyShader;
 	glUseProgram(shader);
